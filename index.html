@@ -1,1 +1,95 @@
-# THEHACKSTATION
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VUE PS - 13.50 EXPLOIT HOST</title>
+    <style>
+        body {
+            background-color: #000;
+            color: #00FF00;
+            font-family: 'Courier New', Courier, monospace;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+        #terminal {
+            width: 80%;
+            border: 2px solid #005500;
+            padding: 20px;
+            background: rgba(0, 20, 0, 0.9);
+            box-shadow: 0 0 20px #003300;
+        }
+        .btn-guide {
+            margin-top: 30px;
+            font-size: 1.2em;
+            text-align: center;
+        }
+        .button { color: #fff; font-weight: bold; text-shadow: 0 0 5px #fff; }
+        .blink { animation: blinker 1.5s linear infinite; }
+        @keyframes blinker { 50% { opacity: 0; } }
+        hr { border: 0; border-top: 1px solid #004400; margin: 20px 0; }
+        #log { font-size: 0.9em; height: 150px; overflow: hidden; }
+    </style>
+</head>
+<body>
+
+<div id="terminal">
+    <h1 style="text-align: center;">[ VUE PS PROJECT v1.0 ]</h1>
+    <p style="text-align: center;">SYSTEM STATUS: <span class="blink" style="color: white;">FW 13.50 DETECTED</span></p>
+    <hr>
+    <div id="log">
+        <div>> System zainicjowany...</div>
+        <div>> Czekam na instrukcje użytkownika...</div>
+    </div>
+    <hr>
+    <div class="btn-guide">
+        Naciśnij <span class="button">[ X ]</span> aby uruchomić EXPLOIT<br>
+        Naciśnij <span class="button">[ &#9633; ]</span> aby załadować HEN (Auto)
+    </div>
+</div>
+
+<script>
+    const log = document.getElementById('log');
+
+    function print(text, color = "#00FF00") {
+        const div = document.createElement('div');
+        div.style.color = color;
+        div.innerHTML = "> " + text;
+        log.insertBefore(div, log.firstChild); // Nowe logi na górze
+    }
+
+    // Obsługa przycisków pada i klawiatury
+    window.addEventListener("keydown", function(e) {
+        // 'Enter' lub 'X' na padzie (zazwyczaj mapowane jako Enter/Space w przeglądarce PS4)
+        if (e.key === "Enter" || e.keyCode === 13) {
+            runExploit();
+        }
+        // 'Kwadrat' (często mapowany jako 'Shift' lub inny klawisz)
+        if (e.key === "s" || e.keyCode === 83) { 
+            runHEN();
+        }
+    });
+
+    function runExploit() {
+        print("Uruchamiam EXPLOIT WebKit...", "#fff");
+        print("Szukanie dziury w pamięci RAM...");
+        // Tu dodamy Twoją pętlę crashującą
+        setTimeout(() => {
+            print("BŁĄD: Memory Leak at 0x800045... (Próbuję ponownie)", "#ff0000");
+        }, 2000);
+    }
+
+    function runHEN() {
+        print("Ładowanie HEN bez pendrive...", "#fff");
+        print("Pobieranie payloadu z serwera...");
+        print("STAGING... PROSZĘ CZEKAĆ...", "#00ff00");
+    }
+</script>
+
+</body>
+</html>
