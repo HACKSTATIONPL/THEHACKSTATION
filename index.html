@@ -1,35 +1,30 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="UTF-8">
-    <title>VUE-PS HOST</title>
-    <style>
-        body { background-color: #000; color: #00ff41; font-family: monospace; padding: 20px; margin: 0; overflow: hidden; }
-        #terminal { border: 2px solid #003b00; height: 90vh; display: flex; flex-direction: column; padding: 15px; box-sizing: border-box; }
-        #console { flex: 1; overflow-y: auto; margin-bottom: 10px; line-height: 1.5; }
-        .header { border-bottom: 1px solid #003b00; padding-bottom: 10px; margin-bottom: 10px; font-weight: bold; display: flex; justify-content: space-between; }
-        .footer { border-top: 1px solid #003b00; padding-top: 10px; text-align: center; }
-        .white { color: #fff; }
-        .red { color: #ff0000; }
-    </style>
+    <title>LOADER</title>
 </head>
-<body>
+<body bgcolor="#000" text="#fff">
+    <script>
+        document.write("INJECTING...");
 
-    <div id="terminal">
-        <div class="header">
-            <span>VUE-PS ENGINE v1.0 [FW 13.50]</span>
-            <span id="stat">READY</span>
-        </div>
+        // 1. Natychmiastowe uderzenie w pamięć RAM (Heap Spray)
+        var ram_spray = [];
+        for(var i = 0; i < 200; i++) {
+            ram_spray.push(new Uint32Array(1024 * 512));
+        }
 
-        <div id="console">
-            <div>> Czekam na załadowanie skryptu...</div>
-        </div>
-
-        <div class="footer">
-            KLIKNIJ EKRAN LUB NACISNIJ <span class="white">[ X ]</span>
-        </div>
-    </div>
-
-    <script src="exploit.js"></script>
+        // 2. Pobieranie HEN-a "na siłę"
+        setTimeout(function() {
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', 'hen.bin', false); 
+            
+            try {
+                xhr.send();
+                document.body.innerHTML = "<b>PAYLOAD DELIVERED.</b><br>ZAMKNIJ PRZEGLADARKE.";
+            } catch(e) {
+                document.body.innerHTML = "<b>SYSTEM 13.50 LOCKED.</b><br>WAITING FOR KERNEL EXPLOIT.";
+            }
+        }, 1000);
+    </script>
 </body>
 </html>
