@@ -1,30 +1,9 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>LOADER</title>
+    <title>VUE-PS CORE</title>
 </head>
-<body bgcolor="#000" text="#fff">
-    <script>
-        document.write("INJECTING...");
-
-        // 1. Natychmiastowe uderzenie w pamięć RAM (Heap Spray)
-        var ram_spray = [];
-        for(var i = 0; i < 200; i++) {
-            ram_spray.push(new Uint32Array(1024 * 512));
-        }
-
-        // 2. Pobieranie HEN-a "na siłę"
-        setTimeout(function() {
-            var xhr = new XMLHttpRequest();
-            xhr.open('GET', 'hen.bin', false); 
-            
-            try {
-                xhr.send();
-                document.body.innerHTML = "<b>PAYLOAD DELIVERED.</b><br>ZAMKNIJ PRZEGLADARKE.";
-            } catch(e) {
-                document.body.innerHTML = "<b>SYSTEM 13.50 LOCKED.</b><br>WAITING FOR KERNEL EXPLOIT.";
-            }
-        }, 1000);
-    </script>
+<body style="background-color:#000; color:#00ff41; font-family:monospace; padding:20px; margin:0;">
+    <script src="exploit.js"></script>
 </body>
 </html>
