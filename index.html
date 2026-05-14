@@ -1,49 +1,89 @@
-<script>
-    var spray = [];
-    
-    // Funkcja, która ma oszukać optymalizator (JIT)
-    function optimizeMe(obj) {
-        return obj.x + 1;
-    }
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>PS4 Research Lab</title>
+    <style>
+        body { background: #0a0a0a; color: #33ff33; font-family: 'Courier New', monospace; margin: 0; padding: 20px; text-align: center; }
+        #console { background: #000; border: 2px solid #33ff33; height: 300px; text-align: left; padding: 10px; overflow-y: scroll; margin-bottom: 20px; font-size: 14px; box-shadow: 0 0 15px rgba(51, 255, 51, 0.2); }
+        .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        button { background: #1a1a1a; color: #33ff33; border: 1px solid #33ff33; padding: 15px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        button:hover { background: #33ff33; color: #000; }
+        .critical { color: #ff3333; font-weight: bold; }
+        .info { color: #33ccff; }
+    </style>
+</head>
+<body>
+    <h1>SYSTEM EXPLOITATION TERMINAL</h1>
+    <div id="console">Initializing... Gotowy do testów.<br></div>
 
-    function runPowerfulExploit() {
-        print("Faza 1: Rozgrzewanie procesora (JIT Spray)...");
-        
-        // Wykonujemy funkcję 10 000 razy, żeby przeglądarka ją "zoptymalizowała"
-        let testObj = { x: 1 };
-        for(let i = 0; i < 10000; i++) {
-            optimizeMe(testObj);
+    <div class="btn-group">
+        <button onclick="testUAF()">1. UAF & Heap Spray</button>
+        <button onclick="testJIT()">2. JIT Type Confusion</button>
+        <button onclick="testStack()">3. Stack Overflow</button>
+        <button onclick="testOOM()">4. OOM Pressure</button>
+    </div>
+
+    <script>
+        const log = document.getElementById('console');
+        function print(txt, cls='') {
+            const d = document.createElement('div');
+            if(cls) d.className = cls;
+            d.innerHTML = `[${new Date().toLocaleTimeString()}] > ${txt}`;
+            log.appendChild(d);
+            log.scrollTop = log.scrollHeight;
         }
 
-        print("Faza 2: Próba wywołania Type Confusion...");
-        // Nagle zmieniamy strukturę obiektu - JIT może się pogubić
-        testObj = { x: 1, y: 2 }; 
-        optimizeMe(testObj);
+        var store = [];
 
-        print("Faza 3: Agresywne uderzenie w TypedArrays...");
-        
-        try {
-            for(let i = 0; i < 500; i++) {
-                // Tworzymy ogromne bufory, które nakładają się na siebie
-                let buffer = new ArrayBuffer(0x1000); 
-                let view = new Float64Array(buffer); // Float64 używa 8 bajtów, co ułatwia trafienie w adresy
-                
-                // Wypełniamy "magiczną" liczbą, która w HEX wygląda jak adresy pamięci
-                view.fill(1.123456789e-308); 
-                spray.push(view);
+        // --- TECHNIKA 1: Use-After-Free ---
+        function testUAF() {
+            print("Uruchamianie UAF (Object Manipulation)...");
+            let a = { a: 1 };
+            for(let i=0; i<5000; i++) {
+                let b = new Uint32Array(0x100);
+                b.fill(0x41414141);
+                store.push(b);
             }
-        } catch(e) {
-            print("Błąd alokacji: " + e.message, "critical");
+            print("Próba zwolnienia obiektu i ponownej alokacji...", "info");
+            a = null;
+            // Tutaj następuje próba "wstrzyknięcia" danych w miejsce 'a'
         }
 
-        print("Faza 4: Wyzwalanie rekurencji...");
-        function boom() {
-            boom(); // To powinno "zabić" proces przeglądarki
+        // --- TECHNIKA 2: JIT Confusion (Nowoczesne) ---
+        function testJIT() {
+            print("Wyzwalanie JIT (Just-In-Time Compiler)...");
+            function func(obj, switch_type) {
+                if (switch_type) { obj.a = 1.1; }
+                return obj.a;
+            }
+            // Rozgrzewanie JIT
+            for (let i = 0; i < 10000; i++) { func({a: 1}, false); }
+            print("JIT zoptymalizowany. Wysyłanie sprzecznego typu...", "critical");
+            func({a: "crash me"}, true);
         }
-        
-        setTimeout(() => {
-            print("OSTATNIA PRÓBA: Crash stosu...");
-            boom();
-        }, 1000);
-    }
-</script>
+
+        // --- TECHNIKA 3: Stack Exhaustion ---
+        function testStack() {
+            print("Uderzanie w stos systemowy (Recursive Loop)...");
+            try {
+                function recurse() { recurse(); }
+                recurse();
+            } catch(e) {
+                print("Stos przechwycony przez Error: " + e.message, "info");
+            }
+        }
+
+        // --- TECHNIKA 4: Out of Memory (Extreme) ---
+        function testOOM() {
+            print("Agresywne wypełnianie RAM (OOM Pressure)...", "critical");
+            setInterval(() => {
+                let chunk = new BigUint64Array(0x100000);
+                chunk.fill(0xDEADBEEFCAFEBABE7n);
+                store.push(chunk);
+                if(store.length % 10 == 0) print("Alokacja: " + (store.length * 8) + "MB");
+            }, 50);
+        }
+    </script>
+</body>
+</html>
