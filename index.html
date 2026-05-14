@@ -2,90 +2,104 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>PS4 Research Lab</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PS4 Research Lab v2.0</title>
     <style>
-        body { background: #0a0a0a; color: #33ff33; font-family: 'Courier New', monospace; margin: 0; padding: 20px; text-align: center; }
-        #console { background: #000; border: 2px solid #33ff33; height: 300px; text-align: left; padding: 10px; overflow-y: scroll; margin-bottom: 20px; font-size: 14px; box-shadow: 0 0 15px rgba(51, 255, 51, 0.2); }
-        .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        button { background: #1a1a1a; color: #33ff33; border: 1px solid #33ff33; padding: 15px; font-weight: bold; cursor: pointer; transition: 0.3s; }
-        button:hover { background: #33ff33; color: #000; }
-        .critical { color: #ff3333; font-weight: bold; }
-        .info { color: #33ccff; }
+        body { background: #050505; color: #00ff00; font-family: 'Courier New', monospace; padding: 20px; margin: 0; overflow: hidden; }
+        #terminal { background: #000; border: 1px solid #00ff00; height: calc(100vh - 160px); overflow-y: auto; padding: 10px; margin-bottom: 15px; box-shadow: inset 0 0 10px #00ff00; }
+        .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        button { background: #002200; color: #00ff00; border: 1px solid #00ff00; padding: 15px; cursor: pointer; font-weight: bold; text-transform: uppercase; }
+        button:hover { background: #00ff00; color: #000; }
+        .crit { color: #ff0000; font-weight: bold; }
+        .warn { color: #ffff00; }
+        .ok { color: #00ccff; }
     </style>
 </head>
 <body>
-    <h1>SYSTEM EXPLOITATION TERMINAL</h1>
-    <div id="console">Initializing... Gotowy do testów.<br></div>
+    <h2 style="text-align: center;">PS4 WEBKIT FUZZER [13.50]</h2>
+    <div id="terminal">
+        <div>[SYSTEM] Gotowy do inicjacji...</div>
+        <div>[INFO] Wybierz silnik ataku poniżej.</div>
+    </div>
 
-    <div class="btn-group">
-        <button onclick="testUAF()">1. UAF & Heap Spray</button>
-        <button onclick="testJIT()">2. JIT Type Confusion</button>
-        <button onclick="testStack()">3. Stack Overflow</button>
-        <button onclick="testOOM()">4. OOM Pressure</button>
+    <div class="controls">
+        <button onclick="testJIT()">Silnik 1: JIT 2.0</button>
+        <button onclick="testUAF()">Silnik 2: UAF Spray</button>
     </div>
 
     <script>
-        const log = document.getElementById('console');
-        function print(txt, cls='') {
-            const d = document.createElement('div');
-            if(cls) d.className = cls;
-            d.innerHTML = `[${new Date().toLocaleTimeString()}] > ${txt}`;
-            log.appendChild(d);
-            log.scrollTop = log.scrollHeight;
+        const term = document.getElementById('terminal');
+        var storage = [];
+
+        function print(msg, type = '') {
+            const line = document.createElement('div');
+            if (type) line.className = type;
+            line.innerHTML = `[${new Date().toLocaleTimeString()}] > ${msg}`;
+            term.appendChild(line);
+            term.scrollTop = term.scrollHeight;
         }
 
-        var store = [];
-
-        // --- TECHNIKA 1: Use-After-Free ---
-        function testUAF() {
-            print("Uruchamianie UAF (Object Manipulation)...");
-            let a = { a: 1 };
-            for(let i=0; i<5000; i++) {
-                let b = new Uint32Array(0x100);
-                b.fill(0x41414141);
-                store.push(b);
-            }
-            print("Próba zwolnienia obiektu i ponownej alokacji...", "info");
-            a = null;
-            // Tutaj następuje próba "wstrzyknięcia" danych w miejsce 'a'
-        }
-
-        // --- TECHNIKA 2: JIT Confusion (Nowoczesne) ---
+        // --- Ulepszony Silnik 1: JIT Type Confusion ---
         function testJIT() {
-            print("Wyzwalanie JIT (Just-In-Time Compiler)...");
-            function func(obj, switch_type) {
-                if (switch_type) { obj.a = 1.1; }
-                return obj.a;
+            print("Inicjacja JIT Type Confusion...", "warn");
+            
+            function get_val(arr, idx) {
+                return arr[idx];
             }
-            // Rozgrzewanie JIT
-            for (let i = 0; i < 10000; i++) { func({a: 1}, false); }
-            print("JIT zoptymalizowany. Wysyłanie sprzecznego typu...", "critical");
-            func({a: "crash me"}, true);
+
+            let normal_arr = [1.1, 2.2, 3.3];
+            let mixed_arr = [{}]; // Tablica z obiektem
+
+            print("Faza 1: Rozgrzewanie optymalizatora (100k iteracji)...");
+            
+            // Zmuszamy JIT do uznania, że ta funkcja zawsze zwraca liczby
+            for(let i = 0; i < 100000; i++) {
+                get_val(normal_arr, 0);
+            }
+
+            print("Faza 2: Próba wywołania błędu logicznego!", "crit");
+            
+            // Nagłe wysłanie obiektu - JIT spróbuje go przeczytać jak liczbę Double
+            setTimeout(() => {
+                for(let i = 0; i < 100; i++) {
+                    get_val(mixed_arr, 0);
+                }
+                print("Atak zakończony. Sprawdź stabilność systemu.", "ok");
+            }, 500);
         }
 
-        // --- TECHNIKA 3: Stack Exhaustion ---
-        function testStack() {
-            print("Uderzanie w stos systemowy (Recursive Loop)...");
+        // --- Ulepszony Silnik 2: Cichy Heap Spray (UAF) ---
+        function testUAF() {
+            print("Inicjacja Cichego Heap Spray...", "warn");
+            storage = []; // Czyścimy poprzednie próby
+
             try {
-                function recurse() { recurse(); }
-                recurse();
+                // Rozmiar 0x100 (256 bajtów) jest idealny dla PS4 - omija alerty pamięci masowej
+                for(let i = 0; i < 20000; i++) {
+                    let b = new ArrayBuffer(0x100);
+                    let v = new Float64Array(b);
+                    
+                    // Wypełniamy wartościami udającymi adresy w pamięci
+                    v.fill(5.4476037220116e-270); 
+                    
+                    storage.push(v); // Blokujemy czyszczenie pamięci (GC)
+
+                    if(i % 5000 === 0 && i > 0) {
+                        print(`Zalokowano ${i} obiektów...`);
+                    }
+                }
+                
+                print("Pamięć nasycona. Wyzwalanie Corruption...", "crit");
+                
+                // Próba przepełnienia struktury tablicy
+                let trigger = new Array(0x1000);
+                trigger.fill(0.1);
+                trigger.length = 0xFFFFFFFF; 
+                
             } catch(e) {
-                print("Stos przechwycony przez Error: " + e.message, "info");
+                print("Błąd: " + e.message, "crit");
             }
         }
-
-        // --- TECHNIKA 4: Out of Memory (Extreme) ---
-        function testOOM() {
-            print("Agresywne wypełnianie RAM (OOM Pressure)...", "critical");
-            setInterval(() => {
-                let chunk = new BigUint64Array(0x100000);
-                chunk.fill(0xDEADBEEFCAFEBABE7n);
-                store.push(chunk);
-                if(store.length % 10 == 0) print("Alokacja: " + (store.length * 8) + "MB");
-            }, 50);
-        }
-        <script src="exploit.js"></script>
-        <script src="exploit1.js"></script>
     </script>
 </body>
 </html>
